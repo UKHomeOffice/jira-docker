@@ -2,10 +2,8 @@ pipeline:
 
   build:
     image: ukhomeoffice/drone-docker
-    repo: quay.io/ukhomeofficedigital/jira
+    repo: quay.io/ukhomeofficedigital/jira-docker
     secrets: [ docker_username, docker_password ]
-    context: app
-    dockerfile: app/Dockerfile
     registry: quay.io
     force_tag: true
     build_args:
@@ -17,7 +15,7 @@ pipeline:
 
 matrix:
   JIRA_VERSION:
-#    - 7.2.4
+    - 7.2.4
     - 7.7.1
     - 7.7.0
     - 7.6.3
@@ -43,15 +41,3 @@ matrix:
     - 7.3.5
     - 7.3.4
     - 7.3.3
-    - 7.3.2
-    - 7.3.1
-    - 7.3.0
-    - 7.2.12
-    - 7.2.11
-    - 7.2.10
-    - 7.2.9
-    - 7.2.8
-    - 7.2.7
-    - 7.2.6
-    - 7.2.5
-    - 7.2.4
