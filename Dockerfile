@@ -3,7 +3,7 @@ FROM openjdk:8
 # Configuration variables.
 ENV JIRA_HOME     /var/atlassian/jira
 ENV JIRA_INSTALL  /opt/atlassian/jira
-ARG JIRA_VERSION=6.4.13
+ARG JIRA_VERSION=7.2.4
 
 # Install Atlassian JIRA and helper tools and setup initial home
 # directory structure.
@@ -38,7 +38,8 @@ RUN mkdir -p                   "${JIRA_HOME}" \
     && chown -R jira:jira      "${JIRA_INSTALL}/work" \
     && sed --in-place          "s/java version/openjdk version/g" "${JIRA_INSTALL}/bin/check-java.sh" \
     && echo -e                 "\njira.home=$JIRA_HOME" >> "${JIRA_INSTALL}/atlassian-jira/WEB-INF/classes/jira-application.properties" \
-    && touch -d "@0"           "${JIRA_INSTALL}/conf/server.xml"
+    && touch -d "@0"           "${JIRA_INSTALL}/conf/server.xml" \
+    && cp -r "${JIRA_INSTALL}/conf" "${JIRA_INSTALL}/original_conf"
 
 # add a runtime arg to extend the timeout for plugin installs
 RUN sed -i 's/^JVM_SUPPORT_RECOMMENDED_ARGS=""/JVM_SUPPORT_RECOMMENDED_ARGS="-Datlassian.plugins.enable.wait=300"/' ${JIRA_INSTALL}/bin/setenv.sh
@@ -50,8 +51,6 @@ EXPOSE 8080
 # home directory needs to be persisted as well as parts of the installation
 # directory due to eg. logs.
 VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
-
-
 
 # Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
