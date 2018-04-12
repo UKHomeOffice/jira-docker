@@ -51,8 +51,8 @@ EXPOSE 8080
 # home directory needs to be persisted as well as parts of the installation
 # directory due to eg. logs.
 # VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
-# Due to a bug in the current k8s version in use we can't use subpath so am using symlinks on a single volumeMount
-VOLUME ["/jira-pvc"]
+# Due to a bug in the current k8s version in use we can't use subpath so can only mount a single volumeMount
+VOLUME ["/opt/atlassian/jira/conf"]
 
 # Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
