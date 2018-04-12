@@ -14,7 +14,7 @@ RUN set -x \
     && useradd -U jira \
     && chown -R jira:jira "/var" \
     && chown -R jira:jira "/opt"
-    
+
 USER jira:jira
 
 RUN mkdir -p ${JIRA_INSTALL}
@@ -50,7 +50,9 @@ EXPOSE 8080
 # Set volume mount points for installation and home directory. Changes to the
 # home directory needs to be persisted as well as parts of the installation
 # directory due to eg. logs.
-VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
+# VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
+# Due to a bug in the current k8s version in use we can't use subpath so am using symlinks on a single volumeMount
+VOLUME ["/jira-pvc"]
 
 # Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
