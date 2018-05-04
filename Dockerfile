@@ -15,6 +15,10 @@ RUN set -x \
     && chown -R jira:jira "/var" \
     && chown -R jira:jira "/opt"
 
+# Add aws-cli tools
+RUN apt-get install -y python-pip
+RUN pip install awscli --upgrade
+
 USER jira:jira
 
 RUN mkdir -p ${JIRA_INSTALL}
@@ -48,11 +52,11 @@ RUN sed -i 's/^JVM_SUPPORT_RECOMMENDED_ARGS=""/JVM_SUPPORT_RECOMMENDED_ARGS="-Da
 EXPOSE 8080
 
 # Set volume mount points for installation and home directory. Changes to the
-# home directory needs to be persisted as well as parts of the installation
+# home directory need to be persisted as well as parts of the installation
 # directory due to eg. logs.
-# VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
+VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
 # Due to a bug in the current k8s version in use we can't use subpath so can only mount a single volumeMount
-VOLUME ["/opt/atlassian/jira/conf"]
+# VOLUME ["/var/atlassian/jira"]
 
 # Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
