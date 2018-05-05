@@ -1,26 +1,27 @@
 FROM openjdk:8
 
 # Configuration variables.
-ENV JIRA_HOME     /var/atlassian/jira
-ENV JIRA_INSTALL  /opt/atlassian/jira
 ARG JIRA_VERSION=7.2.4
 
-# Install Atlassian JIRA and helper tools and setup initial home
-# directory structure.
+ENV JIRA_HOME     /var/atlassian/jira
+ENV JIRA_INSTALL  /opt/atlassian/jira
+ENV USERMAP_UID 1000
+ENV USERMAP_GID 1000
+
 RUN set -x \
     && apt-get update --quiet \
     && apt-get install --quiet --yes --no-install-recommends xmlstarlet apt-utils \
-    && apt-get clean \
-    && useradd -U jira \
-    && chown -R jira:jira "/var" \
-    && chown -R jira:jira "/opt"
+    && apt-get clean
+
+RUN adduser --disabled-password --gecos "" --uid ${USERMAP_UID} jira \
+    && chown jira:jira -R /var \
+    && chown jira:jira -R /opt
 
 # Add aws-cli tools
 RUN apt-get install -y python-pip
 RUN pip install awscli --upgrade
 
-USER jira:jira
-
+# Install Atlassian JIRA and helper tools
 RUN mkdir -p ${JIRA_INSTALL}
 RUN wget -q -O - https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL} || \
     wget -q -O - http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL}
@@ -62,7 +63,9 @@ VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/
 WORKDIR /var/atlassian/jira
 
 COPY "docker-entrypoint.sh" "/"
-ENTRYPOINT ["/docker-entrypoint.sh"]
 
-# Run Atlassian JIRA as a foreground process by default.
+USER ${USERMAP_UID}
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+# Run Atlassian JIRA as a foreground process
 CMD ["/opt/atlassian/jira/bin/catalina.sh", "run"]
