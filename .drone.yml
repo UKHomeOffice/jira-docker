@@ -16,3 +16,4 @@ pipeline:
 matrix:
   JIRA_VERSION:
     - 7.2.4
+    - 7.9.1
