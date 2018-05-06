@@ -50,7 +50,7 @@
     -->
     <Service name="Catalina">
 
-        <Connector port="{{CATALINA_PORT}}"
+        <Connector port="{{SERVER_PORT}}"
 
                    maxThreads="150"
                    minSpareThreads="25"
@@ -60,12 +60,12 @@
                    maxHttpHeaderSize="8192"
                    protocol="HTTP/1.1"
                    useBodyEncodingForURI="true"
-                   redirectPort="{{CATALINA_REDIRECT_PORT}}"
+                   redirectPort="{{SERVER_REDIRECT_PORT}}"
                    acceptCount="100"
                    disableUploadTimeout="true"
 
-                   proxyName="{{CATALINA_PROXY_NAME}}"
-                   proxyPort="{{CATALINA_PROXY_PORT}}"
+                   proxyName="{{SERVER_PROXY_NAME}}"
+                   proxyPort="{{SERVER_PROXY_PORT}}"
                    scheme="https"
                    secure="true"/>
 
