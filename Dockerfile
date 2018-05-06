@@ -1,25 +1,24 @@
 FROM openjdk:8
 
-# Configuration variables.
-ARG JIRA_VERSION=7.2.4
+LABEL maintainer="dqdevops@homeoffice.gsi.gov.uk"
+
+ARG JIRA_VERSION=7.9.1
 
 ENV JIRA_HOME     /var/atlassian/jira
 ENV JIRA_INSTALL  /opt/atlassian/jira
 ENV USERMAP_UID 1000
-ENV USERMAP_GID 1000
 
 RUN set -x \
     && apt-get update --quiet \
     && apt-get install --quiet --yes --no-install-recommends xmlstarlet apt-utils \
-    && apt-get clean
-
-RUN adduser --disabled-password --gecos "" --uid ${USERMAP_UID} jira \
+    && apt-get clean \
+    && adduser --disabled-password --gecos "" --uid ${USERMAP_UID} jira \
     && chown jira:jira -R /var \
     && chown jira:jira -R /opt
 
 # Add aws-cli tools
-RUN apt-get install -y python-pip
-RUN pip install awscli --upgrade
+RUN apt-get install -y python-pip \
+    && pip install awscli --upgrade
 
 # Install Atlassian JIRA and helper tools
 RUN mkdir -p ${JIRA_INSTALL}
@@ -28,6 +27,7 @@ RUN wget -q -O - https://product-downloads.atlassian.com/software/jira/downloads
 
 RUN mkdir -p                   "${JIRA_HOME}" \
     && mkdir -p                "${JIRA_HOME}/caches/indexes" \
+    && mkdir -p                "${JIRA_HOME}/templates" \
     && chmod -R 700            "${JIRA_HOME}" \
     && chown -R jira:jira      "${JIRA_HOME}" \
     && mkdir -p                "${JIRA_INSTALL}/conf/Catalina" \
@@ -51,23 +51,18 @@ RUN mkdir -p                   "${JIRA_HOME}" \
 # add a runtime arg to extend the timeout for plugin installs
 RUN sed -i 's/^JVM_SUPPORT_RECOMMENDED_ARGS=""/JVM_SUPPORT_RECOMMENDED_ARGS="-Datlassian.plugins.enable.wait=300"/' ${JIRA_INSTALL}/bin/setenv.sh
 
-# Expose default HTTP connector port.
+VOLUME ["/var/atlassian/jira"]
+
 EXPOSE 8080
 
-# Set volume mount points for installation and home directory. Changes to the
-# home directory need to be persisted as well as parts of the installation
-# directory due to eg. logs.
-VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
-# Due to a bug in the current k8s version in use we can't use subpath so can only mount a single volumeMount
-# VOLUME ["/var/atlassian/jira"]
-
-# Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
 
+COPY --chown=jira:jira "assets/jira_home/dbconfig.xml" "${JIRA_HOME}/templates/"
+COPY --chown=jira:jira "assets/jira_install/conf/server.xml" "${JIRA_HOME}/templates/"
 COPY "docker-entrypoint.sh" "/"
 
 USER ${USERMAP_UID}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-# Run Atlassian JIRA as a foreground process
+# Run JIRA as a foreground process
 CMD ["/opt/atlassian/jira/bin/catalina.sh", "run"]
