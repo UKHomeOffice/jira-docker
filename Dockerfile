@@ -25,9 +25,9 @@ RUN mkdir -p ${JIRA_INSTALL}
 RUN wget -q -O - https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL} || \
     wget -q -O - http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL}
 
-RUN mkdir -p                   "${JIRA_HOME}" \
+RUN mkdir -p                   "/home/jira/templates" \
+    && mkdir -p                "${JIRA_HOME}" \
     && mkdir -p                "${JIRA_HOME}/caches/indexes" \
-    && mkdir -p                "${JIRA_HOME}/templates" \
     && chmod -R 700            "${JIRA_HOME}" \
     && chown -R jira:jira      "${JIRA_HOME}" \
     && mkdir -p                "${JIRA_INSTALL}/conf/Catalina" \
@@ -57,8 +57,8 @@ EXPOSE 8080
 
 WORKDIR /var/atlassian/jira
 
-COPY --chown=jira:jira "assets/jira_home/dbconfig.xml" "${JIRA_HOME}/templates/"
-COPY --chown=jira:jira "assets/jira_install/conf/server.xml" "${JIRA_HOME}/templates/"
+COPY --chown=jira:jira "assets/jira_home/dbconfig.xml" "/home/jira/templates/"
+COPY --chown=jira:jira "assets/jira_install/conf/server.xml" "/home/jira/templates/"
 COPY "docker-entrypoint.sh" "/"
 
 USER ${USERMAP_UID}

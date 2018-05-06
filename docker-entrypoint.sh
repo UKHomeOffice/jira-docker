@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cp ${JIRA_HOME}/templates/dbconfig.xml ${JIRA_HOME}/dbconfig.xml
-cp ${JIRA_HOME}/templates/server.xml ${JIRA_INSTALL}/conf/server.xml
+cp /home/jira/templates/dbconfig.xml ${JIRA_HOME}/dbconfig.xml
+cp /home/jira/templates/server.xml ${JIRA_INSTALL}/conf/server.xml
 
 
 # update the server.xml connection settings from environment variables
