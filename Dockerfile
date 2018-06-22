@@ -1,27 +1,32 @@
 FROM openjdk:8
 
-# Configuration variables.
+LABEL maintainer="dqdevops@homeoffice.gsi.gov.uk"
+
+ARG JIRA_VERSION=7.9.1
+
 ENV JIRA_HOME     /var/atlassian/jira
 ENV JIRA_INSTALL  /opt/atlassian/jira
-ARG JIRA_VERSION=7.2.4
+ENV USERMAP_UID 1000
 
-# Install Atlassian JIRA and helper tools and setup initial home
-# directory structure.
 RUN set -x \
     && apt-get update --quiet \
     && apt-get install --quiet --yes --no-install-recommends xmlstarlet apt-utils \
     && apt-get clean \
-    && useradd -U jira \
-    && chown -R jira:jira "/var" \
-    && chown -R jira:jira "/opt"
-    
-USER jira:jira
+    && adduser --disabled-password --gecos "" --uid ${USERMAP_UID} jira \
+    && chown jira:jira -R /var \
+    && chown jira:jira -R /opt
 
+# Add aws-cli tools
+RUN apt-get install -y python-pip \
+    && pip install awscli --upgrade
+
+# Install Atlassian JIRA and helper tools
 RUN mkdir -p ${JIRA_INSTALL}
 RUN wget -q -O - https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL} || \
     wget -q -O - http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}.tar.gz | tar xz --strip=1 -C ${JIRA_INSTALL}
 
-RUN mkdir -p                   "${JIRA_HOME}" \
+RUN mkdir -p                   "/home/jira/templates" \
+    && mkdir -p                "${JIRA_HOME}" \
     && mkdir -p                "${JIRA_HOME}/caches/indexes" \
     && chmod -R 700            "${JIRA_HOME}" \
     && chown -R jira:jira      "${JIRA_HOME}" \
@@ -39,24 +44,25 @@ RUN mkdir -p                   "${JIRA_HOME}" \
     && sed --in-place          "s/java version/openjdk version/g" "${JIRA_INSTALL}/bin/check-java.sh" \
     && echo -e                 "\njira.home=$JIRA_HOME" >> "${JIRA_INSTALL}/atlassian-jira/WEB-INF/classes/jira-application.properties" \
     && touch -d "@0"           "${JIRA_INSTALL}/conf/server.xml" \
-    && cp -r "${JIRA_INSTALL}/conf" "${JIRA_INSTALL}/original_conf"
+    && cp -r "${JIRA_INSTALL}/conf" "${JIRA_INSTALL}/original_conf" \
+    && chmod -R 700            "${JIRA_INSTALL}/original_conf" \
+    && chown -R jira:jira      "${JIRA_INSTALL}/original_conf"
 
 # add a runtime arg to extend the timeout for plugin installs
 RUN sed -i 's/^JVM_SUPPORT_RECOMMENDED_ARGS=""/JVM_SUPPORT_RECOMMENDED_ARGS="-Datlassian.plugins.enable.wait=300"/' ${JIRA_INSTALL}/bin/setenv.sh
 
-# Expose default HTTP connector port.
+VOLUME ["/var/atlassian/jira"]
+
 EXPOSE 8080
 
-# Set volume mount points for installation and home directory. Changes to the
-# home directory needs to be persisted as well as parts of the installation
-# directory due to eg. logs.
-VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs", "/opt/atlassian/jira/conf"]
-
-# Set the default working directory as the installation directory.
 WORKDIR /var/atlassian/jira
 
+COPY --chown=jira:jira "assets/jira_home/dbconfig.xml" "/home/jira/templates/"
+COPY --chown=jira:jira "assets/jira_install/conf/server.xml" "/home/jira/templates/"
 COPY "docker-entrypoint.sh" "/"
-ENTRYPOINT ["/docker-entrypoint.sh"]
 
-# Run Atlassian JIRA as a foreground process by default.
+USER ${USERMAP_UID}
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+# Run JIRA as a foreground process
 CMD ["/opt/atlassian/jira/bin/catalina.sh", "run"]
