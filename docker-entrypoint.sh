@@ -5,7 +5,7 @@ cp /home/jira/templates/server.xml ${JIRA_INSTALL}/conf/server.xml
 
 # update the server.xml connection settings from environment variables
 
-# Check variables have been set before proceeding and remove whitespace.
+# Check environment variables have been set before proceeding and remove whitespace.
 
 if  [ -z "${SERVER_PORT// }" ]; then
 	echo "SERVER_PORT is not defined!!! See README.md for more info."
@@ -37,7 +37,7 @@ fi
 
 # update the dbconfig.xml settings from environment variables
 
-# Check variables have been set before proceeding and remove whitespace.
+# Check environment variables have been set before proceeding and remove whitespace.
 
 if [ -z "${DATABASE_HOST// }" ]; then
 	echo "DATABASE_HOST is not defined!!! See README.md for more info."
