@@ -17,7 +17,7 @@ This JIRA docker image is expected to be deployed behind a reverse proxy. The pr
 
 ### Environment variables
 
-The image requires the following environment variables to be set as part of the deployment as they are used to set the server's proxy and database connections at runtime.
+The image requires the following environment variables to be set as part of the deployment as they are used to set the server's proxy and database connections at runtime. If the environment variables are not set the image will fail to start and exit with an exit code 1.
 
 Environment variable | Description | Example
 -------------------- | ----------- | -------
