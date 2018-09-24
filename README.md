@@ -5,12 +5,16 @@
 
 [![Docker Repository on Quay](https://quay.io/repository/ukhomeofficedigital/jira-docker/status "Docker Repository on Quay")](https://quay.io/repository/ukhomeofficedigital/jira-docker)
 
-## Prerequisites
+## Introduction
+
+This Docker image provides JIRA as a Docker container intended for use in the UK Home Office ACP.
 
 
 ### Database
 
-This JIRA docker image uses a PostgreSQL database for its backend. There is **no** local database running in this JIRA docker image. It expects to use a separate database such as an additional container running in Kube, or an AWS RDS instance for example. Whichever option is required can be specified using the `DATABASE_*` environment variables detailed further down this README.
+This JIRA docker image uses a PostgreSQL database for its backend.
+
+NOTE: There is **no** local database running in this JIRA docker image. It expects to use a separate database such as an additional container running in Kube, or an AWS RDS instance for example. Whichever option is preferred can be specified using the `DATABASE_*` environment variables detailed further down this README.
 
 
 ### Reverse Proxy
